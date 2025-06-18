@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TabbedPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+            xmlns:views="clr-namespace:neatsplit.Views"
+            x:Class="neatsplit.Views.GroupDetailPage"
+            Title="Group Details">
+    <TabbedPage.Children>
+        <views:ExpensesTab Title="Expenses" />
+        <views:MembersTab Title="Members" />
+        <views:BalancesTab Title="Balances" />
+    </TabbedPage.Children>
+</TabbedPage> 

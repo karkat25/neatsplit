@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="neatsplit.Views.AddExpensePage"
+             Title="Add Expense">
+    <ContentPage.Content>
+        <ScrollView>
+            <VerticalStackLayout Padding="20" Spacing="16">
+                <Label Text="Description" />
+                <Entry x:Name="DescriptionEntry" Placeholder="Expense description" />
+
+                <Label Text="Total Amount" />
+                <Entry x:Name="TotalEntry" Placeholder="Total amount" Keyboard="Numeric" />
+
+                <Label Text="Payer" />
+                <Picker x:Name="PayerPicker" Title="Select payer" ItemDisplayBinding="{Binding Name}" />
+
+                <Label Text="Items" FontAttributes="Bold" />
+                <CollectionView x:Name="ItemsCollectionView" ItemsSource="{Binding Items}" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame Margin="0,5" Padding="10" CornerRadius="8" HasShadow="True" BackgroundColor="#F5F5F5">
+                                <VerticalStackLayout Spacing="8">
+                                    <Entry Text="{Binding Description}" Placeholder="Item name" />
+                                    <Entry Text="{Binding Cost}" Placeholder="Cost" Keyboard="Numeric" />
+                                    <Label Text="Participants" FontSize="12" />
+                                    <CollectionView ItemsSource="{Binding Participants}" SelectionMode="Multiple">
+                                        <CollectionView.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackLayout Orientation="Horizontal">
+                                                    <CheckBox IsChecked="{Binding IsSelected}" />
+                                                    <Label Text="{Binding Name}" />
+                                                </StackLayout>
+                                            </DataTemplate>
+                                        </CollectionView.ItemTemplate>
+                                    </CollectionView>
+                                </VerticalStackLayout>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+                <Button Text="Add Item" Clicked="OnAddItemClicked" />
+                <Button Text="Save Expense" Clicked="OnSaveClicked" BackgroundColor="#512BD4" TextColor="White" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </ContentPage.Content>
+</ContentPage> 

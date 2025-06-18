@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="neatsplit.Views.MembersTab"
+             Title="Members">
+    <ContentPage.Content>
+        <Grid>
+            <CollectionView x:Name="MembersCollectionView"
+                            ItemsSource="{Binding Members}"
+                            Margin="10,10,10,80">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Margin="0,5" Padding="10" CornerRadius="12" HasShadow="True" BackgroundColor="White">
+                            <Frame.Triggers>
+                                <EventTrigger Event="Appearing">
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.4" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Frame.Triggers>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackLayout Grid.Column="0">
+                                    <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="16" />
+                                    <Label Text="{Binding CreatedAt, StringFormat='Joined: {0:yyyy-MM-dd}'}" FontSize="14" TextColor="Gray" />
+                                </StackLayout>
+                                <Button Grid.Column="1" Text="✏️" FontSize="18" BackgroundColor="Transparent" CommandParameter="{Binding Id}" Clicked="OnEditMemberClicked" />
+                                <Button Grid.Column="2" Text="🗑" FontSize="18" BackgroundColor="Transparent" CommandParameter="{Binding Id}" Clicked="OnDeleteMemberClicked" />
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- Floating Action Button -->
+            <Button x:Name="AddMemberButton"
+                    Text="+"
+                    WidthRequest="56"
+                    HeightRequest="56"
+                    CornerRadius="28"
+                    FontSize="32"
+                    BackgroundColor="#512BD4"
+                    TextColor="White"
+                    VerticalOptions="End"
+                    HorizontalOptions="End"
+                    Margin="20"
+                    Clicked="OnAddMemberClicked"
+                    Shadow="10,10,10,Black" />
+        </Grid>
+    </ContentPage.Content>
+</ContentPage> 

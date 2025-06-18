@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="neatsplit.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:neatsplit"
+    Title="neatsplit">
+
+    <ShellContent
+        Title="Home"
+        ContentTemplate="{DataTemplate neatsplit.Views.HomePage}"
+        Route="MainPage" />
+    <ShellContent Title="AddGroup" ContentTemplate="{DataTemplate neatsplit.Views.AddGroupPage}" Route="AddGroupPage" />
+    <ShellContent Title="GroupDetail" ContentTemplate="{DataTemplate neatsplit.Views.GroupDetailPage}" Route="GroupDetailPage" />
+    <ShellContent Title="AddExpense" ContentTemplate="{DataTemplate neatsplit.Views.AddExpensePage}" Route="AddExpensePage" />
+
+</Shell>
