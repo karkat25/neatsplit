@@ -4,8 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using NeatSplit.Models;
 using NeatSplit.Services;
+using NeatSplit.Core;
 
-namespace neatsplit.ViewModels
+namespace NeatSplit.ViewModels
 {
     public class BalanceDisplay
     {
@@ -15,8 +16,8 @@ namespace neatsplit.ViewModels
     public class BalancesTabViewModel : BaseViewModel
     {
         private readonly NeatSplitDatabase _database;
-        private int _groupId;
-        public ObservableCollection<BalanceDisplay> Balances { get; set; } = new();
+        private readonly int _groupId;
+        public ObservableCollection<BalanceResult> Balances { get; set; } = new();
 
         public BalancesTabViewModel(NeatSplitDatabase database, int groupId)
         {
@@ -27,71 +28,74 @@ namespace neatsplit.ViewModels
         public async Task LoadBalancesAsync()
         {
             Balances.Clear();
-            var members = await _database.GetMembersForGroupAsync(_groupId);
+            
+            // Get all expenses for the group
             var expenses = await _database.GetExpensesForGroupAsync(_groupId);
-            var expenseItems = new List<ExpenseItem>();
-            var itemParticipants = new List<ExpenseItemParticipant>();
-            foreach (var expense in expenses)
+            var members = await _database.GetMembersForGroupAsync(_groupId);
+            
+            if (expenses.Any() && members.Any())
             {
-                var items = await _database.GetExpenseItemsForExpenseAsync(expense.Id);
-                expenseItems.AddRange(items);
-                foreach (var item in items)
+                var calculator = new BalanceCalculator();
+                var balances = await calculator.CalculateBalancesAsync(expenses, members);
+                
+                foreach (var balance in balances)
                 {
-                    var participants = await _database.GetParticipantsForExpenseItemAsync(item.Id);
-                    itemParticipants.AddRange(participants);
+                    Balances.Add(balance);
                 }
             }
+        }
 
-            // Calculate how much each member paid and owes
-            var memberPaid = members.ToDictionary(m => m.Id, m => 0.0);
-            var memberOwes = members.ToDictionary(m => m.Id, m => 0.0);
+        public void LoadBalances()
+        {
+            _ = LoadBalancesAsync();
+        }
 
-            foreach (var expense in expenses)
+        public async Task LoadBalancesFromGroupAsync()
+        {
+            Balances.Clear();
+            
+            try
             {
-                if (memberPaid.ContainsKey(expense.PayerMemberId))
-                    memberPaid[expense.PayerMemberId] += expense.TotalAmount;
-            }
-
-            foreach (var item in expenseItems)
-            {
-                var participants = itemParticipants.Where(p => p.ExpenseItemId == item.Id).ToList();
-                if (participants.Count == 0) continue;
-                double share = item.Cost / participants.Count;
-                foreach (var p in participants)
+                var group = await _database.GetGroupAsync(_groupId);
+                if (group == null)
                 {
-                    if (memberOwes.ContainsKey(p.MemberId))
-                        memberOwes[p.MemberId] += share;
+                    Balances.Add(new BalanceDisplay { Display = "Group not found" });
+                    return;
+                }
+
+                group.Members = await _database.GetMembersForGroupAsync(_groupId);
+                group.Expenses = await _database.GetExpensesForGroupAsync(_groupId);
+                
+                foreach (var expense in group.Expenses)
+                {
+                    expense.Items = await _database.GetExpenseItemsForExpenseAsync(expense.Id);
+                    foreach (var item in expense.Items)
+                    {
+                        item.Participants = await _database.GetParticipantsForExpenseItemAsync(item.Id);
+                    }
+                }
+
+                var balanceResults = BalanceCalculator.CalculateBalances(group);
+
+                if (balanceResults.Count == 0)
+                {
+                    Balances.Add(new BalanceDisplay { Display = "All settled up!" });
+                }
+                else
+                {
+                    foreach (var result in balanceResults)
+                    {
+                        Balances.Add(new BalanceDisplay 
+                        { 
+                            Display = $"{result.From} owes {result.To} ${result.Amount:F2}" 
+                        });
+                    }
                 }
             }
-
-            // Calculate net balances
-            var net = members.ToDictionary(m => m.Id, m => memberPaid[m.Id] - memberOwes[m.Id]);
-
-            // Calculate who owes whom (simplified, not optimal for minimal transactions)
-            var creditors = net.Where(kv => kv.Value > 0).OrderByDescending(kv => kv.Value).ToList();
-            var debtors = net.Where(kv => kv.Value < 0).OrderBy(kv => kv.Value).ToList();
-            var results = new List<string>();
-            int ci = 0, di = 0;
-            while (ci < creditors.Count && di < debtors.Count)
+            catch (Exception ex)
             {
-                var creditor = creditors[ci];
-                var debtor = debtors[di];
-                double amount = System.Math.Min(creditor.Value, -debtor.Value);
-                if (amount > 0.01)
-                {
-                    string from = members.First(m => m.Id == debtor.Key).Name;
-                    string to = members.First(m => m.Id == creditor.Key).Name;
-                    results.Add($"{from} owes {to} ${amount:F2}");
-                    net[creditor.Key] -= amount;
-                    net[debtor.Key] += amount;
-                }
-                if (net[creditor.Key] < 0.01) ci++;
-                if (net[debtor.Key] > -0.01) di++;
+                Balances.Add(new BalanceDisplay { Display = $"Error calculating balances: {ex.Message}" });
             }
-            if (results.Count == 0)
-                results.Add("All settled up!");
-            foreach (var r in results)
-                Balances.Add(new BalanceDisplay { Display = r });
         }
     }
 } 

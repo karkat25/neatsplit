@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NeatSplit.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+51c24fd5918288200dc93b520564b17fcbfc8bc2")]
 [assembly: System.Reflection.AssemblyProductAttribute("NeatSplit.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NeatSplit.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

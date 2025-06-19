@@ -1,40 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
+using NeatSplit.Models;
+using System.Threading.Tasks;
 
 namespace NeatSplit.Core
 {
-    public class Member
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-    }
-    public class Expense
-    {
-        public int Id { get; set; }
-        public int GroupId { get; set; }
-        public string Description { get; set; }
-        public double TotalAmount { get; set; }
-        public int PayerMemberId { get; set; }
-    }
-    public class ExpenseItem
-    {
-        public int Id { get; set; }
-        public int ExpenseId { get; set; }
-        public string Description { get; set; }
-        public double Cost { get; set; }
-    }
-    public class ExpenseItemParticipant
-    {
-        public int ExpenseItemId { get; set; }
-        public int MemberId { get; set; }
-    }
-    public class BalanceResult
-    {
-        public string From { get; set; }
-        public string To { get; set; }
-        public double Amount { get; set; }
-    }
-    public static class BalanceCalculator
+    public class BalanceCalculator
     {
         public static List<BalanceResult> CalculateBalances(
             List<Member> members,
@@ -64,26 +35,127 @@ namespace NeatSplit.Core
             }
 
             var net = members.ToDictionary(m => m.Id, m => memberPaid[m.Id] - memberOwes[m.Id]);
-            var creditors = net.Where(kv => kv.Value > 0).OrderByDescending(kv => kv.Value).ToList();
-            var debtors = net.Where(kv => kv.Value < 0).OrderBy(kv => kv.Value).ToList();
             var results = new List<BalanceResult>();
-            int ci = 0, di = 0;
-            while (ci < creditors.Count && di < debtors.Count)
+            
+            // Create mutable lists of creditors and debtors
+            var creditors = net.Where(kv => kv.Value > 0.01)
+                              .Select(kv => (memberId: kv.Key, amount: kv.Value))
+                              .OrderByDescending(c => c.amount)
+                              .ToList();
+            var debtors = net.Where(kv => kv.Value < -0.01)
+                            .Select(kv => (memberId: kv.Key, amount: -kv.Value))
+                            .OrderByDescending(d => d.amount)
+                            .ToList();
+
+            // Process each debtor
+            for (int di = 0; di < debtors.Count; di++)
             {
-                var creditor = creditors[ci];
                 var debtor = debtors[di];
-                double amount = System.Math.Min(creditor.Value, -debtor.Value);
-                if (amount > 0.01)
+                double remainingDebt = debtor.amount;
+
+                // Find creditors to pay off this debt
+                for (int ci = 0; ci < creditors.Count && remainingDebt > 0.01; ci++)
                 {
-                    string from = members.First(m => m.Id == debtor.Key).Name;
-                    string to = members.First(m => m.Id == creditor.Key).Name;
-                    results.Add(new BalanceResult { From = from, To = to, Amount = amount });
-                    net[creditor.Key] -= amount;
-                    net[debtor.Key] += amount;
+                    var creditor = creditors[ci];
+                    if (creditor.amount <= 0.01) continue;
+
+                    double transferAmount = System.Math.Min(remainingDebt, creditor.amount);
+
+                    // Add the balance result
+                    string fromMember = members.First(m => m.Id == debtor.memberId).Name;
+                    string toMember = members.First(m => m.Id == creditor.memberId).Name;
+                    
+                    results.Add(new BalanceResult 
+                    { 
+                        From = fromMember, 
+                        To = toMember, 
+                        Amount = transferAmount 
+                    });
+
+                    // Update remaining amounts
+                    remainingDebt -= transferAmount;
+                    creditors[ci] = (creditor.memberId, creditor.amount - transferAmount);
                 }
-                if (net[creditor.Key] < 0.01) ci++;
-                if (net[debtor.Key] > -0.01) di++;
             }
+
+            return results;
+        }
+
+        /// <summary>
+        /// Async method for calculating balances from expenses and members
+        /// </summary>
+        public async Task<List<BalanceResult>> CalculateBalancesAsync(
+            List<Expense> expenses, 
+            List<Member> members)
+        {
+            // For now, we'll use a simplified calculation
+            // In a real implementation, you'd fetch expense items and participants from the database
+            
+            var memberPaid = members.ToDictionary(m => m.Id, m => 0.0);
+            var memberOwes = members.ToDictionary(m => m.Id, m => 0.0);
+
+            // Calculate what each member paid
+            foreach (var expense in expenses)
+            {
+                if (memberPaid.ContainsKey(expense.PayerMemberId))
+                    memberPaid[expense.PayerMemberId] += expense.TotalAmount;
+            }
+
+            // For now, assume equal split among all members
+            double totalExpenses = expenses.Sum(e => e.TotalAmount);
+            double perPersonShare = totalExpenses / members.Count;
+
+            foreach (var member in members)
+            {
+                memberOwes[member.Id] = perPersonShare;
+            }
+
+            // Calculate net balances
+            var net = members.ToDictionary(m => m.Id, m => memberPaid[m.Id] - memberOwes[m.Id]);
+            
+            // Create balance results
+            var results = new List<BalanceResult>();
+            
+            var creditors = net.Where(kv => kv.Value > 0.01)
+                              .Select(kv => (memberId: kv.Key, amount: kv.Value))
+                              .OrderByDescending(c => c.amount)
+                              .ToList();
+            var debtors = net.Where(kv => kv.Value < -0.01)
+                            .Select(kv => (memberId: kv.Key, amount: -kv.Value))
+                            .OrderByDescending(d => d.amount)
+                            .ToList();
+
+            // Process each debtor
+            for (int di = 0; di < debtors.Count; di++)
+            {
+                var debtor = debtors[di];
+                double remainingDebt = debtor.amount;
+
+                // Find creditors to pay off this debt
+                for (int ci = 0; ci < creditors.Count && remainingDebt > 0.01; ci++)
+                {
+                    var creditor = creditors[ci];
+                    if (creditor.amount <= 0.01) continue;
+
+                    double transferAmount = System.Math.Min(remainingDebt, creditor.amount);
+
+                    // Add the balance result
+                    string fromMember = members.First(m => m.Id == debtor.memberId).Name;
+                    string toMember = members.First(m => m.Id == creditor.memberId).Name;
+                    
+                    results.Add(new BalanceResult 
+                    { 
+                        From = fromMember, 
+                        To = toMember, 
+                        Amount = transferAmount 
+                    });
+
+                    // Update remaining amounts
+                    remainingDebt -= transferAmount;
+                    creditors[ci] = (creditor.memberId, creditor.amount - transferAmount);
+                }
+            }
+
             return results;
         }
     }

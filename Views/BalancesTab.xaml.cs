@@ -1,29 +1,26 @@
-using neatsplit.ViewModels;
+using NeatSplit.ViewModels;
 using NeatSplit.Services;
 using Microsoft.Maui.Controls;
 
-namespace neatsplit.Views
+namespace NeatSplit.Views
 {
     public partial class BalancesTab : ContentPage
     {
-        private BalancesTabViewModel _viewModel;
-        private int _groupId;
+        private readonly BalancesTabViewModel _viewModel;
+        private readonly int _groupId;
 
-        public BalancesTab()
+        public BalancesTab(int groupId)
         {
             InitializeComponent();
+            _groupId = groupId;
+            _viewModel = new BalancesTabViewModel(App.Current.Services.GetService<NeatSplitDatabase>(), _groupId);
+            BindingContext = _viewModel;
         }
 
-        protected override async void OnParentSet()
+        protected override void OnAppearing()
         {
-            base.OnParentSet();
-            if (Parent is GroupDetailPage groupDetailPage)
-            {
-                _groupId = groupDetailPage.GroupId;
-                _viewModel = new BalancesTabViewModel(App.Current.Services.GetService<NeatSplitDatabase>(), _groupId);
-                BindingContext = _viewModel;
-                await _viewModel.LoadBalancesAsync();
-            }
+            base.OnAppearing();
+            _viewModel.LoadBalances();
         }
     }
 } 

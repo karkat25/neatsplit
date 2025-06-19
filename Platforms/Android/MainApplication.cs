@@ -1,7 +1,7 @@
 ﻿using Android.App;
 using Android.Runtime;
 
-namespace neatsplit;
+namespace NeatSplit;
 
 [Application]
 public class MainApplication : MauiApplication

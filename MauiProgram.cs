@@ -1,9 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
-using neatsplit.Services;
-using System.IO;
 using NeatSplit.Services;
+using System.IO;
 
-namespace neatsplit;
+namespace NeatSplit;
 
 public static class MauiProgram
 {
@@ -23,8 +22,9 @@ public static class MauiProgram
 		builder.Logging.AddDebug();
 #endif
 
-		// Register NeatSplitDatabase as a singleton
+		// Register services
 		builder.Services.AddSingleton<NeatSplitDatabase>();
+		builder.Services.AddSingleton<DataIntegrityService>();
 
 		return builder.Build();
 	}

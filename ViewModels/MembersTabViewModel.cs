@@ -3,12 +3,12 @@ using System.Threading.Tasks;
 using NeatSplit.Models;
 using NeatSplit.Services;
 
-namespace neatsplit.ViewModels
+namespace NeatSplit.ViewModels
 {
     public class MembersTabViewModel : BaseViewModel
     {
         private readonly NeatSplitDatabase _database;
-        private int _groupId;
+        private readonly int _groupId;
         public ObservableCollection<Member> Members { get; set; } = new();
 
         public MembersTabViewModel(NeatSplitDatabase database, int groupId)
@@ -21,18 +21,39 @@ namespace neatsplit.ViewModels
         {
             Members.Clear();
             var members = await _database.GetMembersForGroupAsync(_groupId);
-            foreach (var m in members)
-                Members.Add(m);
+            foreach (var member in members)
+            {
+                Members.Add(member);
+            }
         }
 
-        public async Task<bool> AddMemberAsync(string name)
+        public void LoadMembers()
+        {
+            _ = LoadMembersAsync();
+        }
+
+        public async Task<(bool success, string errorMessage)> AddMemberAsync(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
-                return false;
-            var member = new Member { GroupId = _groupId, Name = name };
-            await _database.SaveMemberAsync(member);
-            Members.Add(member);
-            return true;
+                return (false, "Member name cannot be empty.");
+
+            try
+            {
+                var member = new Member { Id = 0, GroupId = _groupId, Name = name, CreatedDate = DateTime.Now };
+                await _database.SaveMemberAsync(member);
+                Members.Add(member);
+                return (true, string.Empty);
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Handle duplicate member name error
+                return (false, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                // Handle other database errors
+                return (false, $"Failed to add member: {ex.Message}");
+            }
         }
     }
 } 

@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace neatsplit.ViewModels
+namespace NeatSplit.ViewModels
 {
     public class BaseViewModel : INotifyPropertyChanged
     {

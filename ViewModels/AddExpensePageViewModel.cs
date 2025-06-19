@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using NeatSplit.Models;
 using NeatSplit.Services;
 
-namespace neatsplit.ViewModels
+namespace NeatSplit.ViewModels
 {
     public class ItemParticipant
     {
@@ -24,67 +24,76 @@ namespace neatsplit.ViewModels
     {
         private readonly NeatSplitDatabase _database;
         private readonly int _groupId;
+        
+        public ObservableCollection<ExpenseItem> Items { get; set; } = new();
         public ObservableCollection<Member> Members { get; set; } = new();
-        public ObservableCollection<ExpenseItemInput> Items { get; set; } = new();
+        
         public string Description { get; set; }
-        public string Total { get; set; }
+        public double TotalAmount { get; set; }
+        public DateTime Date { get; set; } = DateTime.Now;
         public Member SelectedPayer { get; set; }
 
         public AddExpensePageViewModel(NeatSplitDatabase database, int groupId)
         {
             _database = database;
             _groupId = groupId;
+            LoadMembers();
         }
 
-        public async Task LoadMembersAsync()
+        private async void LoadMembers()
         {
-            Members.Clear();
             var members = await _database.GetMembersForGroupAsync(_groupId);
-            foreach (var m in members)
-                Members.Add(m);
+            Members.Clear();
+            foreach (var member in members)
+            {
+                Members.Add(member);
+            }
         }
 
-        public void AddItem()
+        public void AddItem(ExpenseItem item)
         {
-            var participants = Members.Select(m => new ItemParticipant { MemberId = m.Id, Name = m.Name, IsSelected = false }).ToList();
-            Items.Add(new ExpenseItemInput { Participants = new ObservableCollection<ItemParticipant>(participants) });
+            Items.Add(item);
         }
 
-        public async Task<bool> SaveExpenseAsync()
+        public void UpdateItem(ExpenseItem item)
         {
-            if (string.IsNullOrWhiteSpace(Description) || SelectedPayer == null || !double.TryParse(Total, out double totalAmount) || Items.Count == 0)
-                return false;
+            // The item is already in the collection, so we just need to trigger UI update
+            OnPropertyChanged(nameof(Items));
+        }
+
+        public void RemoveItem(ExpenseItem item)
+        {
+            Items.Remove(item);
+        }
+
+        public async Task SaveExpenseAsync()
+        {
+            if (string.IsNullOrWhiteSpace(Description) || TotalAmount <= 0 || SelectedPayer == null)
+            {
+                throw new InvalidOperationException("Please fill all required fields");
+            }
 
             var expense = new Expense
             {
-                GroupId = _groupId,
+                Id = 0, // Always reset for new
                 Description = Description,
-                TotalAmount = totalAmount,
-                PayerMemberId = SelectedPayer.Id
+                TotalAmount = TotalAmount,
+                Date = Date,
+                GroupId = _groupId,
+                PayerMemberId = SelectedPayer.Id,
+                CreatedDate = DateTime.Now
             };
-            await _database.SaveExpenseAsync(expense);
 
+            await _database.AddExpenseAsync(expense);
+
+            // Add expense items
             foreach (var item in Items)
             {
-                var expenseItem = new ExpenseItem
-                {
-                    ExpenseId = expense.Id,
-                    Description = item.Description,
-                    Cost = item.Cost
-                };
-                await _database.SaveExpenseItemAsync(expenseItem);
-
-                foreach (var participant in item.Participants.Where(p => p.IsSelected))
-                {
-                    var eip = new ExpenseItemParticipant
-                    {
-                        ExpenseItemId = expenseItem.Id,
-                        MemberId = participant.MemberId
-                    };
-                    await _database.SaveExpenseItemParticipantAsync(eip);
-                }
+                item.Id = 0; // Always reset for new
+                item.ExpenseId = expense.Id;
+                item.CreatedDate = DateTime.Now;
+                await _database.AddExpenseItemAsync(item);
             }
-            return true;
         }
     }
 } 

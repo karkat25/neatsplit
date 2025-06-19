@@ -1,6 +1,6 @@
 ﻿using Foundation;
 
-namespace neatsplit;
+namespace NeatSplit;
 
 [Register("AppDelegate")]
 public class AppDelegate : MauiUIApplicationDelegate

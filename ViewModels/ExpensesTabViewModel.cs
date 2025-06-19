@@ -4,7 +4,7 @@ using System.Linq;
 using NeatSplit.Models;
 using NeatSplit.Services;
 
-namespace neatsplit.ViewModels
+namespace NeatSplit.ViewModels
 {
     public class ExpenseDisplay
     {
@@ -17,8 +17,8 @@ namespace neatsplit.ViewModels
     public class ExpensesTabViewModel : BaseViewModel
     {
         private readonly NeatSplitDatabase _database;
-        private int _groupId;
-        public ObservableCollection<ExpenseDisplay> Expenses { get; set; } = new();
+        private readonly int _groupId;
+        public ObservableCollection<Expense> Expenses { get; set; } = new();
 
         public ExpensesTabViewModel(NeatSplitDatabase database, int groupId)
         {
@@ -32,15 +32,13 @@ namespace neatsplit.ViewModels
             var expenses = await _database.GetExpensesForGroupAsync(_groupId);
             foreach (var expense in expenses)
             {
-                var payer = await _database.GetMemberAsync(expense.PayerMemberId);
-                Expenses.Add(new ExpenseDisplay
-                {
-                    Id = expense.Id,
-                    Description = expense.Description,
-                    TotalAmount = expense.TotalAmount,
-                    PayerName = payer?.Name ?? "Unknown"
-                });
+                Expenses.Add(expense);
             }
+        }
+
+        public void LoadExpenses()
+        {
+            _ = LoadExpensesAsync();
         }
     }
 } 

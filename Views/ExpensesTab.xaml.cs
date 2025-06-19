@@ -1,32 +1,29 @@
-using neatsplit.ViewModels;
+using NeatSplit.ViewModels;
 using NeatSplit.Services;
 using Microsoft.Maui.Controls;
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 
-namespace neatsplit.Views
+namespace NeatSplit.Views
 {
     public partial class ExpensesTab : ContentPage
     {
-        private ExpensesTabViewModel _viewModel;
-        private int _groupId;
+        private readonly ExpensesTabViewModel _viewModel;
+        private readonly int _groupId;
         private bool _isBusy = false;
 
-        public ExpensesTab()
+        public ExpensesTab(int groupId)
         {
             InitializeComponent();
+            _groupId = groupId;
+            _viewModel = new ExpensesTabViewModel(App.Current.Services.GetService<NeatSplitDatabase>(), _groupId);
+            BindingContext = _viewModel;
         }
 
-        protected override async void OnParentSet()
+        protected override void OnAppearing()
         {
-            base.OnParentSet();
-            if (Parent is GroupDetailPage groupDetailPage)
-            {
-                _groupId = groupDetailPage.GroupId;
-                _viewModel = new ExpensesTabViewModel(App.Current.Services.GetService<NeatSplitDatabase>(), _groupId);
-                BindingContext = _viewModel;
-                await _viewModel.LoadExpensesAsync();
-            }
+            base.OnAppearing();
+            _viewModel.LoadExpenses();
         }
 
         private async void OnAddExpenseClicked(object sender, EventArgs e)
@@ -35,7 +32,11 @@ namespace neatsplit.Views
             _isBusy = true;
             try
             {
-                await Shell.Current.GoToAsync($"AddExpensePage?GroupId={_groupId}");
+                var parameters = new Dictionary<string, object>
+                {
+                    { "groupId", _groupId }
+                };
+                await Shell.Current.GoToAsync("AddExpensePage", parameters);
             }
             catch (Exception ex)
             {
@@ -50,18 +51,17 @@ namespace neatsplit.Views
             _isBusy = true;
             try
             {
-                if (sender is Button btn && btn.CommandParameter is int expenseId)
+                if (sender is Button button && button.CommandParameter is int expenseId)
                 {
-                    bool confirm = await DisplayAlert("Delete Expense", "Are you sure you want to delete this expense?", "Yes", "No");
-                    if (confirm)
+                    var result = await DisplayAlert("Delete Expense", "Are you sure you want to delete this expense?", "Yes", "No");
+                    if (result)
                     {
-                        var expense = _viewModel.Expenses.FirstOrDefault(x => x.Id == expenseId);
+                        var db = App.Current.Services.GetService<NeatSplitDatabase>();
+                        var expense = await db.GetExpenseAsync(expenseId);
                         if (expense != null)
                         {
-                            var db = App.Current.Services.GetService<NeatSplitDatabase>();
-                            var dbExpense = await db.GetExpenseAsync(expenseId);
-                            await db.DeleteExpenseAsync(dbExpense);
-                            await _viewModel.LoadExpensesAsync();
+                            await db.DeleteExpenseAsync(expense);
+                            _viewModel.LoadExpenses();
                             await Toast.Make("Expense deleted.", ToastDuration.Short).Show();
                         }
                     }
@@ -80,19 +80,20 @@ namespace neatsplit.Views
             _isBusy = true;
             try
             {
-                if (sender is Button btn && btn.CommandParameter is int expenseId)
+                if (sender is Button button && button.CommandParameter is int expenseId)
                 {
                     var db = App.Current.Services.GetService<NeatSplitDatabase>();
-                    var dbExpense = await db.GetExpenseAsync(expenseId);
-                    string newDescription = await DisplayPromptAsync("Edit Expense", "Enter new description:", initialValue: dbExpense.Description);
-                    string newTotal = await DisplayPromptAsync("Edit Expense", "Enter new total amount:", initialValue: dbExpense.TotalAmount.ToString());
-                    if (!string.IsNullOrWhiteSpace(newDescription) && double.TryParse(newTotal, out double total) && (newDescription != dbExpense.Description || total != dbExpense.TotalAmount))
+                    var expense = await db.GetExpenseAsync(expenseId);
+                    if (expense != null)
                     {
-                        dbExpense.Description = newDescription;
-                        dbExpense.TotalAmount = total;
-                        await db.SaveExpenseAsync(dbExpense);
-                        await _viewModel.LoadExpensesAsync();
-                        await Toast.Make("Expense updated.", ToastDuration.Short).Show();
+                        var newDescription = await DisplayPromptAsync("Edit Expense", "Enter new description:", initialValue: expense.Description);
+                        if (!string.IsNullOrWhiteSpace(newDescription))
+                        {
+                            expense.Description = newDescription.Trim();
+                            await db.SaveExpenseAsync(expense);
+                            _viewModel.LoadExpenses();
+                            await Toast.Make("Expense updated.", ToastDuration.Short).Show();
+                        }
                     }
                 }
             }

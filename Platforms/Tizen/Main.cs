@@ -1,16 +1,22 @@
-using System;
 using Microsoft.Maui;
 using Microsoft.Maui.Hosting;
 
-namespace neatsplit;
+namespace NeatSplit;
 
-class Program : MauiApplication
+public static class Main
 {
-	protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
-
-	static void Main(string[] args)
+	public static void Main(string[] args)
 	{
-		var app = new Program();
+		var builder = MauiApp.CreateBuilder();
+		builder
+			.UseMauiApp<App>()
+			.ConfigureFonts(fonts =>
+			{
+				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+			});
+
+		var app = builder.Build();
 		app.Run(args);
 	}
 }

@@ -1,4 +1,4 @@
-﻿namespace neatsplit;
+﻿namespace NeatSplit;
 
 public partial class AppShell : Shell
 {

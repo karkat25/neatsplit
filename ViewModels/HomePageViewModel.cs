@@ -4,7 +4,7 @@ using System.Linq;
 using NeatSplit.Models;
 using NeatSplit.Services;
 
-namespace neatsplit.ViewModels
+namespace NeatSplit.ViewModels
 {
     public class GroupDisplay
     {

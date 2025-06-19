@@ -5,6 +5,7 @@
 /Users/sakartripathi/Downloads/neatsplit/NeatSplit.Core/obj/Debug/net8.0/NeatSplit.Core.AssemblyInfoInputs.cache
 /Users/sakartripathi/Downloads/neatsplit/NeatSplit.Core/obj/Debug/net8.0/NeatSplit.Core.AssemblyInfo.cs
 /Users/sakartripathi/Downloads/neatsplit/NeatSplit.Core/obj/Debug/net8.0/NeatSplit.Core.csproj.CoreCompileInputs.cache
+/Users/sakartripathi/Downloads/neatsplit/NeatSplit.Core/obj/Debug/net8.0/NeatSplit.Core.sourcelink.json
 /Users/sakartripathi/Downloads/neatsplit/NeatSplit.Core/obj/Debug/net8.0/NeatSplit.Core.dll
 /Users/sakartripathi/Downloads/neatsplit/NeatSplit.Core/obj/Debug/net8.0/refint/NeatSplit.Core.dll
 /Users/sakartripathi/Downloads/neatsplit/NeatSplit.Core/obj/Debug/net8.0/NeatSplit.Core.pdb

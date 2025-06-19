@@ -1,46 +1,62 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="neatsplit.Views.AddExpensePage"
+             x:Class="NeatSplit.Views.AddExpensePage"
              Title="Add Expense">
     <ContentPage.Content>
         <ScrollView>
-            <VerticalStackLayout Padding="20" Spacing="16">
-                <Label Text="Description" />
-                <Entry x:Name="DescriptionEntry" Placeholder="Expense description" />
+            <VerticalStackLayout Padding="20" Spacing="15">
+                <!-- Description -->
+                <Label Text="Description" FontAttributes="Bold" />
+                <Entry x:Name="DescriptionEntry" Placeholder="Enter expense description" />
 
-                <Label Text="Total Amount" />
-                <Entry x:Name="TotalEntry" Placeholder="Total amount" Keyboard="Numeric" />
+                <!-- Total Amount -->
+                <Label Text="Total Amount" FontAttributes="Bold" />
+                <Entry x:Name="AmountEntry" Placeholder="0.00" Keyboard="Numeric" />
 
-                <Label Text="Payer" />
-                <Picker x:Name="PayerPicker" Title="Select payer" ItemDisplayBinding="{Binding Name}" />
+                <!-- Payer -->
+                <Label Text="Paid by" FontAttributes="Bold" />
+                <Picker x:Name="PayerPicker" Title="Select payer">
+                    <Picker.ItemTemplate>
+                        <DataTemplate>
+                            <Label Text="{Binding Name}" />
+                        </DataTemplate>
+                    </Picker.ItemTemplate>
+                </Picker>
 
+                <!-- Date -->
+                <Label Text="Date" FontAttributes="Bold" />
+                <DatePicker x:Name="DatePicker" />
+
+                <!-- Add Item Button -->
+                <Button Text="Add Item" Clicked="OnAddItemClicked" BackgroundColor="#512BD4" TextColor="White" />
+
+                <!-- Items List -->
                 <Label Text="Items" FontAttributes="Bold" />
-                <CollectionView x:Name="ItemsCollectionView" ItemsSource="{Binding Items}" SelectionMode="None">
+                <CollectionView x:Name="ItemsCollectionView" HeightRequest="200">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Frame Margin="0,5" Padding="10" CornerRadius="8" HasShadow="True" BackgroundColor="#F5F5F5">
-                                <VerticalStackLayout Spacing="8">
-                                    <Entry Text="{Binding Description}" Placeholder="Item name" />
-                                    <Entry Text="{Binding Cost}" Placeholder="Cost" Keyboard="Numeric" />
-                                    <Label Text="Participants" FontSize="12" />
-                                    <CollectionView ItemsSource="{Binding Participants}" SelectionMode="Multiple">
-                                        <CollectionView.ItemTemplate>
-                                            <DataTemplate>
-                                                <StackLayout Orientation="Horizontal">
-                                                    <CheckBox IsChecked="{Binding IsSelected}" />
-                                                    <Label Text="{Binding Name}" />
-                                                </StackLayout>
-                                            </DataTemplate>
-                                        </CollectionView.ItemTemplate>
-                                    </CollectionView>
-                                </VerticalStackLayout>
+                            <Frame Margin="0,2" Padding="10" CornerRadius="8" HasShadow="True">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackLayout Grid.Column="0">
+                                        <Label Text="{Binding Description}" FontAttributes="Bold" />
+                                        <Label Text="{Binding Amount, StringFormat='${0:F2}'}" TextColor="Gray" />
+                                    </StackLayout>
+                                    <Button Grid.Column="1" Text="Edit" Clicked="OnEditItemClicked" CommandParameter="{Binding}" />
+                                    <Button Grid.Column="2" Text="Delete" Clicked="OnDeleteItemClicked" CommandParameter="{Binding}" />
+                                </Grid>
                             </Frame>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
-                <Button Text="Add Item" Clicked="OnAddItemClicked" />
-                <Button Text="Save Expense" Clicked="OnSaveClicked" BackgroundColor="#512BD4" TextColor="White" />
+
+                <!-- Save Button -->
+                <Button Text="Save Expense" Clicked="OnSaveClicked" BackgroundColor="Green" TextColor="White" Margin="0,20,0,0" />
             </VerticalStackLayout>
         </ScrollView>
     </ContentPage.Content>
