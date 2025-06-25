@@ -1,113 +1,47 @@
-using NeatSplit.ViewModels;
-using NeatSplit.Services;
-
 namespace NeatSplit.Views;
+
+using NeatSplit.Models;
 
 public partial class HomePage : ContentPage
 {
-    private readonly HomePageViewModel _viewModel;
-    private bool _isBusy = false;
-
+    private int _nextId = 1;
     public HomePage()
     {
         InitializeComponent();
-        _viewModel = new HomePageViewModel(App.Current.Services.GetService<NeatSplitDatabase>());
-        BindingContext = _viewModel;
-        GroupsCollectionView.SelectionChanged += OnGroupSelected;
+        if (AppData.Groups.Count > 0)
+            _nextId = AppData.Groups.Max(g => g.Id) + 1;
     }
 
-    protected override void OnAppearing()
+    private async void OnCreateGroupClicked(object sender, EventArgs e)
     {
-        base.OnAppearing();
-        _viewModel.LoadGroups();
-    }
-
-    private async void OnAddGroupClicked(object sender, EventArgs e)
-    {
-        await Shell.Current.GoToAsync("AddGroupPage");
-    }
-
-    private async void OnGroupSelected(object sender, SelectionChangedEventArgs e)
-    {
-        if (e.CurrentSelection.FirstOrDefault() is ViewModels.GroupDisplay selectedGroup)
+        var groupName = await DisplayPromptAsync("Create Group", "Enter group name:");
+        if (!string.IsNullOrWhiteSpace(groupName))
         {
-            await Shell.Current.GoToAsync($"GroupDetailPage?GroupId={selectedGroup.Id}");
-            GroupsCollectionView.SelectedItem = null;
-        }
-    }
-
-    private async void OnDeleteGroupClicked(object sender, EventArgs e)
-    {
-        if (_isBusy) return;
-        _isBusy = true;
-        try
-        {
-            if (sender is Button btn && btn.CommandParameter is int groupId)
+            var description = await DisplayPromptAsync("Description", "Enter group description (optional):");
+            var newGroup = new Group
             {
-                bool confirm = await DisplayAlert("Delete Group", "Are you sure you want to delete this group? This will remove all related data.", "Yes", "No");
-                if (confirm)
-                {
-                    var db = App.Current.Services.GetService<NeatSplitDatabase>();
-                    var dbGroup = await db.GetGroupAsync(groupId);
-                    await db.DeleteGroupAsync(dbGroup);
-                    _viewModel.LoadGroups();
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            await DisplayAlert("Error", $"Failed to delete group: {ex.Message}", "OK");
-        }
-        finally { _isBusy = false; }
-    }
-
-    private async void OnEditGroupClicked(object sender, EventArgs e)
-    {
-        if (_isBusy) return;
-        _isBusy = true;
-        try
-        {
-            if (sender is Button btn && btn.CommandParameter is int groupId)
-            {
-                var db = App.Current.Services.GetService<NeatSplitDatabase>();
-                var dbGroup = await db.GetGroupAsync(groupId);
-                string newName = await DisplayPromptAsync("Edit Group", "Enter new group name:", initialValue: dbGroup.Name);
-                if (!string.IsNullOrWhiteSpace(newName) && newName != dbGroup.Name)
-                {
-                    dbGroup.Name = newName;
-                    await db.SaveGroupAsync(dbGroup);
-                    _viewModel.LoadGroups();
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            await DisplayAlert("Error", $"Failed to edit group: {ex.Message}", "OK");
-        }
-        finally { _isBusy = false; }
-    }
-
-    private async void OnGroupTapped(object sender, EventArgs e)
-    {
-        if (sender is Frame frame && frame.BindingContext is Group group)
-        {
-            var parameters = new Dictionary<string, object>
-            {
-                { "groupId", group.Id }
+                Id = _nextId++,
+                Name = groupName.Trim(),
+                Description = description?.Trim() ?? "",
+                CreatedDate = DateTime.Now
             };
-            await Shell.Current.GoToAsync("GroupDetailPage", parameters);
+            AppData.Groups.Add(newGroup);
+            await DisplayAlert("Success", $"Group '{groupName}' created!", "OK");
         }
     }
 
-    private async void OnAddMemberClicked(object sender, EventArgs e)
+    private async void OnViewGroupsClicked(object sender, EventArgs e)
     {
-        var memberName = await DisplayPromptAsync("Add Member", "Enter member name:");
-        if (!string.IsNullOrWhiteSpace(memberName))
-        {
-            var db = App.Current.Services.GetService<NeatSplitDatabase>();
-            var member = new Member { Name = memberName.Trim() };
-            await db.AddMemberAsync(member);
-            _viewModel.LoadGroups();
-        }
+        await Navigation.PushAsync(new GroupsPage());
+    }
+
+    private async void OnAddExpenseClicked(object sender, EventArgs e)
+    {
+        await DisplayAlert("Add Expense", "This will add an expense", "OK");
+    }
+
+    private async void OnViewBalancesClicked(object sender, EventArgs e)
+    {
+        await DisplayAlert("Balances", "This will show balances", "OK");
     }
 } 

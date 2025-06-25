@@ -10,8 +10,5 @@
         Title="Home"
         ContentTemplate="{DataTemplate local:Views.HomePage}"
         Route="HomePage" />
-    <ShellContent Title="AddGroup" ContentTemplate="{DataTemplate local:Views.AddGroupPage}" Route="AddGroupPage" />
-    <ShellContent Title="GroupDetail" ContentTemplate="{DataTemplate local:Views.GroupDetailPage}" Route="GroupDetailPage" />
-    <ShellContent Title="AddExpense" ContentTemplate="{DataTemplate local:Views.AddExpensePage}" Route="AddExpensePage" />
 
 </Shell>

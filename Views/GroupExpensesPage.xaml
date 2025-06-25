@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="NeatSplit.Views.GroupExpensesPage"
+             Title="Group Expenses">
+    <ContentPage.Content>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Expenses List -->
+            <CollectionView x:Name="ExpensesCollectionView"
+                            ItemsSource="{Binding Expenses}"
+                            Margin="10,10,10,80">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Margin="0,5" Padding="15" CornerRadius="10" HasShadow="True" BackgroundColor="White">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                
+                                <StackLayout Grid.Column="0">
+                                    <Label Text="{Binding Description, TargetNullValue='(No Description)', FallbackValue='(No Description)'}" 
+                                           FontAttributes="Bold" FontSize="18" TextColor="Black" />
+                                    <Label Text="{Binding Amount, StringFormat='Amount: ${0:F2}'}" FontSize="14" TextColor="Gray" />
+                                    <Label Text="{Binding Date, StringFormat='Date: {0:MMM dd, yyyy}'}" FontSize="12" TextColor="DarkGray" />
+                                </StackLayout>
+                                
+                                <Button Grid.Column="1" 
+                                        Text="✏️" 
+                                        FontSize="18" 
+                                        BackgroundColor="Transparent" 
+                                        CommandParameter="{Binding Id}" 
+                                        Clicked="OnEditExpenseClicked" />
+                                <Button Grid.Column="2" 
+                                        Text="🗑" 
+                                        FontSize="18" 
+                                        BackgroundColor="Transparent" 
+                                        CommandParameter="{Binding Id}" 
+                                        Clicked="OnDeleteExpenseClicked" />
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- Add Expense Button -->
+            <Button x:Name="AddExpenseButton"
+                    Text="+"
+                    Grid.Row="1"
+                    WidthRequest="56"
+                    HeightRequest="56"
+                    CornerRadius="28"
+                    FontSize="32"
+                    BackgroundColor="#FF9800"
+                    TextColor="White"
+                    VerticalOptions="End"
+                    HorizontalOptions="End"
+                    Margin="20"
+                    Clicked="OnAddExpenseClicked" />
+        </Grid>
+    </ContentPage.Content>
+</ContentPage> 

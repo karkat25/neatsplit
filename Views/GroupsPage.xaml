@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="NeatSplit.Views.GroupsPage"
+             Title="My Groups">
+    <ContentPage.Content>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Groups List -->
+            <CollectionView x:Name="GroupsCollectionView"
+                            ItemsSource="{Binding Groups}"
+                            Margin="10,10,10,80"
+                            SelectionMode="Single"
+                            SelectionChanged="OnGroupSelected">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Margin="0,5" Padding="15" CornerRadius="10" HasShadow="True" BackgroundColor="White">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                
+                                <StackLayout Grid.Column="0">
+                                    <Label Text="{Binding Name, TargetNullValue='(No Name)', FallbackValue='(No Name)'}" FontAttributes="Bold" FontSize="18" TextColor="Black" />
+                                    <Label Text="{Binding TotalExpenses, StringFormat='Total Spent: ${0:F2}'}" FontSize="14" TextColor="#4CAF50" />
+                                    <Label Text="{Binding Description}" FontSize="14" TextColor="Gray" />
+                                    <Label Text="{Binding CreatedDate, StringFormat='Created: {0:MMM dd, yyyy}'}" FontSize="12" TextColor="DarkGray" />
+                                </StackLayout>
+                                
+                                <Button Grid.Column="1" 
+                                        Text="👥" 
+                                        FontSize="18" 
+                                        BackgroundColor="Transparent" 
+                                        CommandParameter="{Binding Id}" 
+                                        Clicked="OnMembersClicked" />
+                                <Button Grid.Column="2" 
+                                        Text="💰" 
+                                        FontSize="18" 
+                                        BackgroundColor="Transparent" 
+                                        CommandParameter="{Binding Id}" 
+                                        Clicked="OnExpensesClicked" />
+                                <Button Grid.Column="3" 
+                                        Text="📊" 
+                                        FontSize="18" 
+                                        BackgroundColor="Transparent" 
+                                        CommandParameter="{Binding Id}" 
+                                        Clicked="OnBalancesClicked" />
+                                <Button Grid.Column="4" 
+                                        Text="🗑" 
+                                        FontSize="18" 
+                                        BackgroundColor="Transparent" 
+                                        CommandParameter="{Binding Id}" 
+                                        Clicked="OnDeleteGroupClicked" />
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <!-- Add Group Button -->
+            <Button x:Name="AddGroupButton"
+                    Text="+"
+                    Grid.Row="1"
+                    WidthRequest="56"
+                    HeightRequest="56"
+                    CornerRadius="28"
+                    FontSize="32"
+                    BackgroundColor="#512BD4"
+                    TextColor="White"
+                    VerticalOptions="End"
+                    HorizontalOptions="End"
+                    Margin="20"
+                    Clicked="OnAddGroupClicked" />
+        </Grid>
+    </ContentPage.Content>
+</ContentPage> 

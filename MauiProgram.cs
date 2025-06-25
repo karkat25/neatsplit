@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using NeatSplit.Services;
-using System.IO;
+using CommunityToolkit.Maui;
 
 namespace NeatSplit;
 
@@ -21,10 +20,6 @@ public static class MauiProgram
 #if DEBUG
 		builder.Logging.AddDebug();
 #endif
-
-		// Register services
-		builder.Services.AddSingleton<NeatSplitDatabase>();
-		builder.Services.AddSingleton<DataIntegrityService>();
 
 		return builder.Build();
 	}

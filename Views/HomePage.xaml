@@ -2,57 +2,62 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="NeatSplit.Views.HomePage"
-             Title="Groups">
+             Title="NeatSplit">
     <ContentPage.Content>
-        <Grid>
-            <CollectionView x:Name="GroupsCollectionView"
-                            ItemsSource="{Binding Groups}"
-                            Margin="10,10,10,80">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Frame Margin="0,5" Padding="10" CornerRadius="12" HasShadow="True" BackgroundColor="White">
-                            <Frame.Triggers>
-                                <EventTrigger Event="Appearing">
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.4" />
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </EventTrigger>
-                            </Frame.Triggers>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <StackLayout Grid.Column="0" VerticalOptions="Center" HorizontalOptions="StartAndExpand">
-                                    <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="18" />
-                                    <Label Text="{Binding MemberCount, StringFormat='Members: {0}'}" FontSize="14" TextColor="Gray" />
-                                    <Label Text="Balance: $0.00" FontSize="14" TextColor="DarkGreen" />
-                                </StackLayout>
-                                <Button Grid.Column="1" Text="✏️" FontSize="18" BackgroundColor="Transparent" CommandParameter="{Binding Id}" Clicked="OnEditGroupClicked" />
-                                <Button Grid.Column="2" Text="🗑" FontSize="18" BackgroundColor="Transparent" CommandParameter="{Binding Id}" Clicked="OnDeleteGroupClicked" />
-                            </Grid>
-                        </Frame>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+        <ScrollView>
+            <StackLayout Padding="20" Spacing="20">
+                <!-- Header -->
+                <Label Text="NeatSplit" 
+                       FontSize="32" 
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center" 
+                       Margin="0,20,0,40"/>
+                
+                <Label Text="Split expenses with friends and family" 
+                       FontSize="16" 
+                       TextColor="Gray"
+                       HorizontalOptions="Center" 
+                       Margin="0,0,0,40"/>
 
-            <!-- Floating Action Button -->
-            <Button x:Name="AddGroupButton"
-                    Text="+"
-                    WidthRequest="56"
-                    HeightRequest="56"
-                    CornerRadius="28"
-                    FontSize="32"
-                    BackgroundColor="#512BD4"
-                    TextColor="White"
-                    VerticalOptions="End"
-                    HorizontalOptions="End"
-                    Margin="20"
-                    Clicked="OnAddGroupClicked"
-                    Shadow="10,10,10,Black" />
-        </Grid>
+                <!-- Main Actions -->
+                <Frame Padding="20" CornerRadius="10" HasShadow="True" BackgroundColor="White">
+                    <StackLayout Spacing="15">
+                        <Label Text="Quick Actions" FontSize="20" FontAttributes="Bold" Margin="0,0,0,10"/>
+                        
+                        <Button Text="➕ Create New Group" 
+                                Clicked="OnCreateGroupClicked"
+                                BackgroundColor="#512BD4"
+                                TextColor="White"
+                                CornerRadius="8"
+                                HeightRequest="50"/>
+                        
+                        <Button Text="👥 View My Groups" 
+                                Clicked="OnViewGroupsClicked"
+                                BackgroundColor="#2196F3"
+                                TextColor="White"
+                                CornerRadius="8"
+                                HeightRequest="50"/>
+                        
+                        <Button Text="📊 View Balances" 
+                                Clicked="OnViewBalancesClicked"
+                                BackgroundColor="#FF9800"
+                                TextColor="White"
+                                CornerRadius="8"
+                                HeightRequest="50"/>
+                    </StackLayout>
+                </Frame>
+
+                <!-- Recent Activity -->
+                <Frame Padding="20" CornerRadius="10" HasShadow="True" BackgroundColor="White">
+                    <StackLayout>
+                        <Label Text="Recent Activity" FontSize="20" FontAttributes="Bold" Margin="0,0,0,10"/>
+                        <Label Text="No recent activity" 
+                               TextColor="Gray" 
+                               HorizontalOptions="Center"
+                               Margin="0,20"/>
+                    </StackLayout>
+                </Frame>
+            </StackLayout>
+        </ScrollView>
     </ContentPage.Content>
 </ContentPage> 

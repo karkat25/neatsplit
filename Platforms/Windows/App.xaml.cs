@@ -1,15 +1,16 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Hosting;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace NeatSplit.WinUI;
+namespace neatsplit.WinUI;
 
 /// <summary>
 /// Provides application-specific behavior to supplement the default Application class.
 /// </summary>
-public partial class App : Application
+public partial class App : MauiWinUIApplication
 {
 	/// <summary>
 	/// Initializes the singleton application object.  This is the first line of authored code
@@ -18,10 +19,8 @@ public partial class App : Application
 	public App()
 	{
 		InitializeComponent();
-
-		MainPage = new AppShell();
 	}
 
-	protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
+	protected override MauiApp CreateMauiApp() => NeatSplit.MauiProgram.CreateMauiApp();
 }
 
