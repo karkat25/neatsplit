@@ -17,7 +17,33 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <Frame Margin="0,5" Padding="15" CornerRadius="10" HasShadow="True" BackgroundColor="White">
-                            <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="18" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                
+                                <Label Grid.Column="0" 
+                                       Text="{Binding Name}" 
+                                       FontAttributes="Bold" 
+                                       FontSize="18" 
+                                       TextColor="Black" />
+                                
+                                <Button Grid.Column="1" 
+                                        Text="✏️" 
+                                        FontSize="16" 
+                                        BackgroundColor="Transparent" 
+                                        CommandParameter="{Binding Id}" 
+                                        Clicked="OnEditMemberClicked" />
+                                
+                                <Button Grid.Column="2" 
+                                        Text="🗑" 
+                                        FontSize="16" 
+                                        BackgroundColor="Transparent" 
+                                        CommandParameter="{Binding Id}" 
+                                        Clicked="OnDeleteMemberClicked" />
+                            </Grid>
                         </Frame>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>

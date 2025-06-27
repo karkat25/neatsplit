@@ -1,15 +1,29 @@
-namespace NeatSplit.Views;
-
 using NeatSplit.Models;
+using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Linq;
+
+namespace NeatSplit.Views;
 
 public partial class HomePage : ContentPage
 {
+    public ObservableCollection<Group> Groups => AppData.Groups;
     private int _nextId = 1;
+
     public HomePage()
     {
         InitializeComponent();
+        BindingContext = this;
         if (AppData.Groups.Count > 0)
             _nextId = AppData.Groups.Max(g => g.Id) + 1;
+    }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        // Refresh the UI to show updated stats
+        OnPropertyChanged(nameof(Groups));
     }
 
     private async void OnCreateGroupClicked(object sender, EventArgs e)
@@ -30,18 +44,132 @@ public partial class HomePage : ContentPage
         }
     }
 
-    private async void OnViewGroupsClicked(object sender, EventArgs e)
-    {
-        await Navigation.PushAsync(new GroupsPage());
-    }
-
     private async void OnAddExpenseClicked(object sender, EventArgs e)
     {
-        await DisplayAlert("Add Expense", "This will add an expense", "OK");
+        if (Groups.Count == 0)
+        {
+            await DisplayAlert("No Groups", "Please create a group first.", "OK");
+            return;
+        }
+
+        // Select group
+        var groupNames = Groups.Select(g => g.Name).ToArray();
+        var selectedGroupName = await DisplayActionSheet("Select Group", "Cancel", null, groupNames);
+        if (selectedGroupName == null || selectedGroupName == "Cancel") return;
+
+        var selectedGroup = Groups.First(g => g.Name == selectedGroupName);
+        var groupMembers = AppData.Members.Where(m => m.GroupId == selectedGroup.Id).ToList();
+
+        if (groupMembers.Count == 0)
+    {
+            await DisplayAlert("No Members", "Please add members to this group before adding expenses.", "OK");
+            return;
+        }
+
+        var description = await DisplayPromptAsync("Add Expense", "Enter expense description:");
+        if (!string.IsNullOrWhiteSpace(description))
+            {
+            var amountText = await DisplayPromptAsync("Amount", "Enter expense amount (e.g., 25.50):");
+            if (decimal.TryParse(amountText, out decimal amount))
+            {
+                // Pick payer
+                string payer = await DisplayActionSheet("Who paid?", "Cancel", null, groupMembers.Select(m => m.Name).ToArray());
+                if (payer == null || payer == "Cancel") return;
+                var payerMember = groupMembers.First(m => m.Name == payer);
+
+                // Open participant selection page with complete expense flow
+                var parameters = new Dictionary<string, object>
+                {
+                    { "allMembers", groupMembers },
+                    { "group", selectedGroup },
+                    { "description", description },
+                    { "amount", amount },
+                    { "payerMember", payerMember }
+                };
+                await Shell.Current.GoToAsync("ParticipantSelectionPage", parameters);
+                // Note: We'll need to handle the result differently since Shell navigation doesn't return values
+                // For now, we'll add the expense directly in the ParticipantSelectionPage
+            }
+            else
+        {
+                await DisplayAlert("Error", "Please enter a valid amount.", "OK");
+        }
+        }
     }
 
-    private async void OnViewBalancesClicked(object sender, EventArgs e)
+    private async void OnMembersClicked(object sender, EventArgs e)
     {
-        await DisplayAlert("Balances", "This will show balances", "OK");
+        if (sender is Button btn && btn.CommandParameter is int groupId)
+            {
+            var group = Groups.FirstOrDefault(g => g.Id == groupId);
+            if (group != null)
+            {
+                var parameters = new Dictionary<string, object>
+                {
+                    { "group", group }
+                };
+                await Shell.Current.GoToAsync("GroupMembersPage", parameters);
+            }
+        }
+    }
+
+    private async void OnExpensesClicked(object sender, EventArgs e)
+    {
+        if (sender is Button btn && btn.CommandParameter is int groupId)
+        {
+            var group = Groups.FirstOrDefault(g => g.Id == groupId);
+            if (group != null)
+            {
+                var parameters = new Dictionary<string, object>
+                {
+                    { "group", group }
+                };
+                await Shell.Current.GoToAsync("GroupExpensesPage", parameters);
+                }
+            }
+        }
+
+    private async void OnBalancesClicked(object sender, EventArgs e)
+        {
+        if (sender is Button btn && btn.CommandParameter is int groupId)
+        {
+            var group = Groups.FirstOrDefault(g => g.Id == groupId);
+            if (group != null)
+            {
+                var parameters = new Dictionary<string, object>
+                {
+                    { "group", group }
+                };
+                await Shell.Current.GoToAsync("GroupBalancesPage", parameters);
+            }
+        }
+    }
+
+    private async void OnGroupTapped(object sender, EventArgs e)
+    {
+        if (sender is Frame frame && frame.BindingContext is Group group)
+        {
+            string action = await DisplayActionSheet($"Options for '{group.Name}'", "Cancel", null, "Edit", "Delete");
+            if (action == "Edit")
+    {
+                string newName = await DisplayPromptAsync("Edit Group", "Edit group name:", initialValue: group.Name);
+                if (!string.IsNullOrWhiteSpace(newName))
+        {
+                    string newDesc = await DisplayPromptAsync("Edit Description", "Edit group description (optional):", initialValue: group.Description);
+                    group.Name = newName.Trim();
+                    group.Description = newDesc?.Trim() ?? "";
+                    await DisplayAlert("Success", "Group updated!", "OK");
+                }
+            }
+            else if (action == "Delete")
+            {
+                bool confirm = await DisplayAlert("Delete Group", $"Are you sure you want to delete '{group.Name}'?", "Yes", "No");
+                if (confirm)
+                {
+                    Groups.Remove(group);
+                    await DisplayAlert("Deleted", $"Group '{group.Name}' has been deleted.", "OK");
+                }
+            }
+        }
     }
 } 

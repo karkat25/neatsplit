@@ -1,27 +1,55 @@
 using NeatSplit.Models;
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace NeatSplit.Views;
 
+[QueryProperty(nameof(Group), "group")]
 public partial class GroupExpensesPage : ContentPage
 {
     public ObservableCollection<Expense> Expenses { get; set; }
     private int _nextId = 1;
-    private readonly Group _group;
+    private Group _group = null!;
 
-    public GroupExpensesPage(Group group)
+    public Group Group
+    {
+        get => _group;
+        set
+        {
+            _group = value;
+            Title = $"Expenses - {_group.Name}";
+            Expenses = new ObservableCollection<Expense>(AppData.Expenses.Where(e => e.GroupId == _group.Id));
+            BindingContext = this;
+            if (AppData.Expenses.Any())
+                _nextId = AppData.Expenses.Max(e => e.Id) + 1;
+            
+            UpdateAddButtonState();
+        }
+    }
+
+    public GroupExpensesPage()
     {
         InitializeComponent();
-        _group = group;
-        Title = $"Expenses of {group.Name}";
-        Expenses = new ObservableCollection<Expense>(AppData.Expenses.Where(e => e.GroupId == group.Id));
-        BindingContext = this;
-        if (AppData.Expenses.Any())
-            _nextId = AppData.Expenses.Max(e => e.Id) + 1;
+        Expenses = new ObservableCollection<Expense>();
+    }
+
+    private void UpdateAddButtonState()
+    {
+        var groupMembers = AppData.Members.Where(m => m.GroupId == _group.Id).ToList();
+        AddExpenseButton.IsEnabled = groupMembers.Count > 0;
     }
 
     private async void OnAddExpenseClicked(object sender, EventArgs e)
     {
+        var groupMembers = AppData.Members.Where(m => m.GroupId == _group.Id).ToList();
+        if (groupMembers.Count == 0)
+        {
+            await DisplayAlert("No Members", "Please add members to this group before adding expenses.", "OK");
+            return;
+        }
+
         var description = await DisplayPromptAsync("Add Expense", "Enter expense description:");
         if (!string.IsNullOrWhiteSpace(description))
         {
@@ -29,29 +57,22 @@ public partial class GroupExpensesPage : ContentPage
             if (decimal.TryParse(amountText, out decimal amount))
             {
                 // Pick payer
-                var groupMembers = AppData.Members.Where(m => m.GroupId == _group.Id).ToList();
-                if (groupMembers.Count == 0)
-                {
-                    await DisplayAlert("No Members", "Please add members to this group first.", "OK");
-                    return;
-                }
                 string payer = await DisplayActionSheet("Who paid?", "Cancel", null, groupMembers.Select(m => m.Name).ToArray());
                 if (payer == null || payer == "Cancel") return;
                 var payerMember = groupMembers.First(m => m.Name == payer);
 
-                var newExpense = new Expense
+                // Open participant selection page with complete expense flow
+                var parameters = new Dictionary<string, object>
                 {
-                    Id = _nextId++,
-                    GroupId = _group.Id,
-                    Description = description.Trim(),
-                    Amount = amount,
-                    Date = DateTime.Now,
-                    PaidByMemberId = payerMember.Id
+                    { "allMembers", groupMembers },
+                    { "group", _group },
+                    { "description", description },
+                    { "amount", amount },
+                    { "payerMember", payerMember }
                 };
-                
-                AppData.Expenses.Add(newExpense);
-                Expenses.Add(newExpense);
-                await DisplayAlert("Success", $"Expense '{description}' added!", "OK");
+                await Shell.Current.GoToAsync("ParticipantSelectionPage", parameters);
+                // Note: We'll need to handle the result differently since Shell navigation doesn't return values
+                // For now, we'll add the expense directly in the ParticipantSelectionPage
             }
             else
             {
@@ -72,7 +93,7 @@ public partial class GroupExpensesPage : ContentPage
                 
                 if (confirm)
                 {
-                    AppData.Expenses.Remove(expense);
+                    AppData.RemoveExpense(expense);
                     Expenses.Remove(expense);
                     await DisplayAlert("Deleted", $"Expense '{expense.Description}' has been deleted.", "OK");
                 }
@@ -104,5 +125,13 @@ public partial class GroupExpensesPage : ContentPage
                 await DisplayAlert("Success", "Expense updated!", "OK");
             }
         }
+    }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        // Refresh the UI to show updated data
+        OnPropertyChanged(nameof(Expenses));
+        UpdateAddButtonState();
     }
 } 

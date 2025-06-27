@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="NeatSplit.Views.ParticipantSelectionPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Select Participants">
+
+    <StackLayout Padding="20" Spacing="20">
+        <Label Text="Select Participants" FontSize="24" FontAttributes="Bold" HorizontalOptions="Center"/>
+        <Label Text="Check the members who participated in this expense:" FontSize="16" HorizontalOptions="Center"/>
+        
+        <ListView x:Name="ParticipantsListView" HasUnevenRows="True" SeparatorVisibility="Default">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <StackLayout Orientation="Horizontal" Padding="10,5">
+                            <CheckBox IsChecked="{Binding IsSelected}" VerticalOptions="Center"/>
+                            <Label Text="{Binding Member.Name}" FontSize="18" VerticalOptions="Center" Margin="10,0,0,0"/>
+                        </StackLayout>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        
+        <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="20">
+            <Button Text="Cancel" Clicked="OnCancelClicked" WidthRequest="100"/>
+            <Button Text="Done" Clicked="OnDoneClicked" WidthRequest="100"/>
+        </StackLayout>
+    </StackLayout>
+
+</ContentPage> 

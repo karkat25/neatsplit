@@ -13,16 +13,16 @@
             <!-- Groups List -->
             <CollectionView x:Name="GroupsCollectionView"
                             ItemsSource="{Binding Groups}"
-                            Margin="10,10,10,80"
-                            SelectionMode="Single"
-                            SelectionChanged="OnGroupSelected">
+                            Margin="10,10,10,80">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <Frame Margin="0,5" Padding="15" CornerRadius="10" HasShadow="True" BackgroundColor="White">
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnGroupTapped" />
+                            </Frame.GestureRecognizers>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="Auto" />
@@ -35,30 +35,30 @@
                                     <Label Text="{Binding CreatedDate, StringFormat='Created: {0:MMM dd, yyyy}'}" FontSize="12" TextColor="DarkGray" />
                                 </StackLayout>
                                 
-                                <Button Grid.Column="1" 
-                                        Text="👥" 
-                                        FontSize="18" 
-                                        BackgroundColor="Transparent" 
-                                        CommandParameter="{Binding Id}" 
-                                        Clicked="OnMembersClicked" />
-                                <Button Grid.Column="2" 
-                                        Text="💰" 
-                                        FontSize="18" 
-                                        BackgroundColor="Transparent" 
-                                        CommandParameter="{Binding Id}" 
-                                        Clicked="OnExpensesClicked" />
-                                <Button Grid.Column="3" 
-                                        Text="📊" 
-                                        FontSize="18" 
-                                        BackgroundColor="Transparent" 
-                                        CommandParameter="{Binding Id}" 
-                                        Clicked="OnBalancesClicked" />
-                                <Button Grid.Column="4" 
-                                        Text="🗑" 
-                                        FontSize="18" 
-                                        BackgroundColor="Transparent" 
-                                        CommandParameter="{Binding Id}" 
-                                        Clicked="OnDeleteGroupClicked" />
+                                <StackLayout Grid.Column="1" Spacing="5">
+                                    <Label Text="{Binding Name}" FontSize="18" FontAttributes="Bold" TextColor="Black"/>
+                                    <Label Text="{Binding Description}" FontSize="14" TextColor="Gray" LineBreakMode="TailTruncation"/>
+                                    <Label Text="{Binding MemberCount, StringFormat='{0} members'}" FontSize="12" TextColor="Gray"/>
+                                    <Label Text="{Binding TotalExpenses, StringFormat='Total: ${0:F2}'}" FontSize="12" TextColor="Gray"/>
+                                </StackLayout>
+                                
+                                <StackLayout Grid.Column="2" Orientation="Horizontal" Spacing="5">
+                                    <Button Text="👥" 
+                                            FontSize="18" 
+                                            BackgroundColor="Transparent" 
+                                            CommandParameter="{Binding Id}" 
+                                            Clicked="OnMembersClicked" />
+                                    <Button Text="💰" 
+                                            FontSize="18" 
+                                            BackgroundColor="Transparent" 
+                                            CommandParameter="{Binding Id}" 
+                                            Clicked="OnExpensesClicked" />
+                                    <Button Text="📊" 
+                                            FontSize="18" 
+                                            BackgroundColor="Transparent" 
+                                            CommandParameter="{Binding Id}" 
+                                            Clicked="OnBalancesClicked" />
+                                </StackLayout>
                             </Grid>
                         </Frame>
                     </DataTemplate>

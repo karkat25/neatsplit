@@ -4,60 +4,115 @@
              x:Class="NeatSplit.Views.HomePage"
              Title="NeatSplit">
     <ContentPage.Content>
-        <ScrollView>
-            <StackLayout Padding="20" Spacing="20">
-                <!-- Header -->
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <StackLayout Grid.Row="0" Padding="20,20,20,10">
                 <Label Text="NeatSplit" 
                        FontSize="32" 
                        FontAttributes="Bold"
                        HorizontalOptions="Center" 
-                       Margin="0,20,0,40"/>
+                       Margin="0,0,0,5"/>
                 
                 <Label Text="Split expenses with friends and family" 
                        FontSize="16" 
                        TextColor="Gray"
                        HorizontalOptions="Center" 
-                       Margin="0,0,0,40"/>
+                       Margin="0,0,0,20"/>
 
-                <!-- Main Actions -->
-                <Frame Padding="20" CornerRadius="10" HasShadow="True" BackgroundColor="White">
-                    <StackLayout Spacing="15">
-                        <Label Text="Quick Actions" FontSize="20" FontAttributes="Bold" Margin="0,0,0,10"/>
-                        
-                        <Button Text="➕ Create New Group" 
-                                Clicked="OnCreateGroupClicked"
-                                BackgroundColor="#512BD4"
-                                TextColor="White"
-                                CornerRadius="8"
-                                HeightRequest="50"/>
-                        
-                        <Button Text="👥 View My Groups" 
-                                Clicked="OnViewGroupsClicked"
-                                BackgroundColor="#2196F3"
-                                TextColor="White"
-                                CornerRadius="8"
-                                HeightRequest="50"/>
-                        
-                        <Button Text="📊 View Balances" 
-                                Clicked="OnViewBalancesClicked"
-                                BackgroundColor="#FF9800"
-                                TextColor="White"
-                                CornerRadius="8"
-                                HeightRequest="50"/>
-                    </StackLayout>
-                </Frame>
-
-                <!-- Recent Activity -->
-                <Frame Padding="20" CornerRadius="10" HasShadow="True" BackgroundColor="White">
-                    <StackLayout>
-                        <Label Text="Recent Activity" FontSize="20" FontAttributes="Bold" Margin="0,0,0,10"/>
-                        <Label Text="No recent activity" 
-                               TextColor="Gray" 
-                               HorizontalOptions="Center"
-                               Margin="0,20"/>
-                    </StackLayout>
-                </Frame>
+                <!-- Quick Action Buttons -->
+                <StackLayout Orientation="Horizontal" Spacing="10" HorizontalOptions="Center">
+                    <Button Text="➕ Add Group" 
+                            Clicked="OnCreateGroupClicked"
+                            BackgroundColor="#512BD4"
+                            TextColor="White"
+                            CornerRadius="8"
+                            HeightRequest="45"
+                            WidthRequest="140"/>
+                    
+                    <Button Text="💰 Add Expense" 
+                            Clicked="OnAddExpenseClicked"
+                            BackgroundColor="#FF9800"
+                            TextColor="White"
+                            CornerRadius="8"
+                            HeightRequest="45"
+                            WidthRequest="140"/>
+                </StackLayout>
             </StackLayout>
-        </ScrollView>
+
+            <!-- Groups List -->
+            <CollectionView Grid.Row="1" 
+                            x:Name="GroupsCollectionView"
+                            ItemsSource="{Binding Groups}"
+                            Margin="10,0,10,20">
+                <CollectionView.EmptyView>
+                    <StackLayout HorizontalOptions="Center" VerticalOptions="Center" Margin="20">
+                        <Label Text="No groups yet" 
+                               FontSize="20" 
+                               FontAttributes="Bold" 
+                               HorizontalOptions="Center" 
+                               TextColor="Gray" />
+                        <Label Text="Create your first group to get started!" 
+                               FontSize="16" 
+                               HorizontalOptions="Center" 
+                               TextColor="Gray" 
+                               Margin="0,10,0,0" />
+                    </StackLayout>
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Margin="0,5" Padding="15" CornerRadius="10" HasShadow="True" BackgroundColor="White">
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnGroupTapped" />
+                            </Frame.GestureRecognizers>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                
+                                <StackLayout Grid.Column="0">
+                                    <Label Text="{Binding Name, TargetNullValue='(No Name)', FallbackValue='(No Name)'}" 
+                                           FontAttributes="Bold" FontSize="18" TextColor="Black" />
+                                    <Label Text="{Binding TotalExpenses, StringFormat='Total: ${0:F2}'}" 
+                                           FontSize="14" TextColor="#4CAF50" />
+                                    <Label Text="{Binding MemberCount, StringFormat='{0} members'}" 
+                                           FontSize="14" TextColor="#2196F3" />
+                                    <Label Text="{Binding Description}" 
+                                           FontSize="12" TextColor="Gray" 
+                                           LineBreakMode="TailTruncation" />
+                                </StackLayout>
+                                
+                                <Button Grid.Column="1" 
+                                        Text="👥" 
+                                        FontSize="16" 
+                                        BackgroundColor="Transparent" 
+                                        CommandParameter="{Binding Id}" 
+                                        Clicked="OnMembersClicked" />
+                                <Button Grid.Column="2" 
+                                        Text="💰" 
+                                        FontSize="16" 
+                                        BackgroundColor="Transparent" 
+                                        CommandParameter="{Binding Id}" 
+                                        Clicked="OnExpensesClicked" />
+                                <Button Grid.Column="3" 
+                                        Text="📊" 
+                                        FontSize="16" 
+                                        BackgroundColor="Transparent" 
+                                        CommandParameter="{Binding Id}" 
+                                        Clicked="OnBalancesClicked" />
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
     </ContentPage.Content>
 </ContentPage> 
