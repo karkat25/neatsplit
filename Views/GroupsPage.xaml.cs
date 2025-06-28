@@ -38,8 +38,16 @@ public partial class GroupsPage : ContentPage
                 Description = description?.Trim() ?? "",
                 CreatedDate = DateTime.Now
             };
-            Groups.Add(newGroup);
-            await DisplayAlert("Success", $"Group '{groupName}' created!", "OK");
+            
+            try
+            {
+                await AppData.AddGroupAsync(newGroup);
+                await DisplayAlert("Success", $"Group '{groupName}' created!", "OK");
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Error", $"Failed to create group: {ex.Message}", "OK");
+            }
         }
     }
 
@@ -53,8 +61,15 @@ public partial class GroupsPage : ContentPage
                 bool confirm = await DisplayAlert("Delete Group", $"Are you sure you want to delete '{group.Name}'?", "Yes", "No");
                 if (confirm)
                 {
-                    Groups.Remove(group);
-                    await DisplayAlert("Deleted", $"Group '{group.Name}' has been deleted.", "OK");
+                    try
+                    {
+                        await AppData.DeleteGroupAsync(group);
+                        await DisplayAlert("Deleted", $"Group '{group.Name}' has been deleted.", "OK");
+                    }
+                    catch (Exception ex)
+                    {
+                        await DisplayAlert("Error", $"Failed to delete group: {ex.Message}", "OK");
+                    }
                 }
             }
         }

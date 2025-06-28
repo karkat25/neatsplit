@@ -48,14 +48,16 @@ public class PaymentInstruction : INotifyPropertyChanged
                     
                     if (existingPayment == null)
                     {
-                        AppData.PaidPayments.Add(new PaidPayment
+                        var newPayment = new PaidPayment
                         {
                             FromMemberId = FromMemberId,
                             ToMemberId = ToMemberId,
                             GroupId = GroupId,
                             Amount = Amount,
                             PaidDate = DateTime.Now
-                        });
+                        };
+                        Task.Run(async () => await AppData.AddPaidPaymentAsync(newPayment));
+                        AppData.PaidPayments.Add(newPayment);
                     }
                     
                     // Remove from collection immediately
@@ -78,6 +80,7 @@ public class PaymentInstruction : INotifyPropertyChanged
                     
                     if (paymentToRemove != null)
                     {
+                        Task.Run(async () => await AppData.RemovePaidPaymentAsync(paymentToRemove));
                         AppData.PaidPayments.Remove(paymentToRemove);
                     }
                 }

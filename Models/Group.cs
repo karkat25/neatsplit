@@ -1,15 +1,19 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using SQLite;
 
 namespace NeatSplit.Models;
 
+[Table("Groups")]
 public class Group : INotifyPropertyChanged
 {
     private string _name = string.Empty;
     private string _description = string.Empty;
     
+    [PrimaryKey, AutoIncrement]
     public int Id { get; set; }
     
+    [MaxLength(100)]
     public string Name 
     { 
         get => _name;
@@ -23,6 +27,7 @@ public class Group : INotifyPropertyChanged
         }
     }
     
+    [MaxLength(500)]
     public string Description 
     { 
         get => _description;
@@ -38,11 +43,25 @@ public class Group : INotifyPropertyChanged
     
     public DateTime CreatedDate { get; set; } = DateTime.Now;
 
-    public decimal TotalExpenses =>
-        NeatSplit.AppData.Expenses.Where(e => e.GroupId == Id).Sum(e => e.Amount);
+    [Ignore]
+    public decimal TotalExpenses
+    {
+        get
+        {
+            var total = NeatSplit.AppData.Expenses.Where(e => e.GroupId == Id).Sum(e => e.Amount);
+            return total;
+        }
+    }
         
-    public int MemberCount =>
-        NeatSplit.AppData.Members.Count(m => m.GroupId == Id);
+    [Ignore]
+    public int MemberCount
+    {
+        get
+        {
+            var count = NeatSplit.AppData.Members.Count(m => m.GroupId == Id);
+            return count;
+        }
+    }
 
     public void NotifyCalculatedPropertiesChanged()
     {

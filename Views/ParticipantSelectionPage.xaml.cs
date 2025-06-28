@@ -133,7 +133,6 @@ public partial class ParticipantSelectionPage : ContentPage
         // Create the expense
         var expense = new Expense
         {
-            Id = GetNextExpenseId(),
             GroupId = _group.Id,
             Description = _description.Trim(),
             Amount = _amount,
@@ -164,18 +163,11 @@ public partial class ParticipantSelectionPage : ContentPage
         // If splitType is null or "Equal Split (Default)", it stays as Equal Split
 
         // Add the expense directly
-        AppData.AddExpense(expense);
+        await AppData.AddExpense(expense);
         await DisplayAlert("Success", $"Expense '{_description}' added!", "OK");
         
         // Navigate back
         await Shell.Current.GoToAsync("..");
-    }
-
-    private int GetNextExpenseId()
-    {
-        if (AppData.Expenses.Count > 0)
-            return AppData.Expenses.Max(e => e.Id) + 1;
-        return 1;
     }
 
     private async Task<bool> SetupCustomSplit(Expense expense, List<Member> members, decimal totalAmount)

@@ -1,3 +1,5 @@
+using SQLite;
+
 namespace NeatSplit.Models;
 
 public enum SplitType
@@ -7,19 +9,35 @@ public enum SplitType
     Percentage
 }
 
+[Table("Expense")]
 public class Expense
 {
+    [PrimaryKey, AutoIncrement]
     public int Id { get; set; }
+    
     public int GroupId { get; set; }
+    
+    [MaxLength(200)]
     public string Description { get; set; } = string.Empty;
+    
     public decimal Amount { get; set; }
+    
     public DateTime Date { get; set; } = DateTime.Now;
+    
     public int PaidByMemberId { get; set; }
+    
     public SplitType SplitType { get; set; } = SplitType.Equal;
+    
+    [Ignore]
     public Dictionary<int, decimal> CustomSplitAmounts { get; set; } = new(); // MemberId -> Amount
+    
+    [Ignore]
     public Dictionary<int, decimal> PercentageSplitAmounts { get; set; } = new(); // MemberId -> Percentage
+    
+    [Ignore]
     public List<int> Participants { get; set; } = new(); // MemberIds who participated
     
+    [Ignore]
     public string PaidByMemberName 
     { 
         get 

@@ -9,14 +9,11 @@ namespace NeatSplit.Views;
 public partial class HomePage : ContentPage
 {
     public ObservableCollection<Group> Groups => AppData.Groups;
-    private int _nextId = 1;
 
     public HomePage()
     {
         InitializeComponent();
         BindingContext = this;
-        if (AppData.Groups.Count > 0)
-            _nextId = AppData.Groups.Max(g => g.Id) + 1;
     }
 
     protected override void OnAppearing()
@@ -28,19 +25,29 @@ public partial class HomePage : ContentPage
 
     private async void OnCreateGroupClicked(object sender, EventArgs e)
     {
-        var groupName = await DisplayPromptAsync("Create Group", "Enter group name:");
-        if (!string.IsNullOrWhiteSpace(groupName))
+        try
         {
-            var description = await DisplayPromptAsync("Description", "Enter group description (optional):");
-            var newGroup = new Group
+            var groupName = await DisplayPromptAsync("Create Group", "Enter group name:");
+            if (!string.IsNullOrWhiteSpace(groupName))
             {
-                Id = _nextId++,
-                Name = groupName.Trim(),
-                Description = description?.Trim() ?? "",
-                CreatedDate = DateTime.Now
-            };
-            AppData.Groups.Add(newGroup);
-            await DisplayAlert("Success", $"Group '{groupName}' created!", "OK");
+                var description = await DisplayPromptAsync("Description", "Enter group description (optional):");
+                var newGroup = new Group
+                {
+                    Name = groupName.Trim(),
+                    Description = description?.Trim() ?? "",
+                    CreatedDate = DateTime.Now
+                };
+                
+                System.Diagnostics.Debug.WriteLine($"Creating group: {newGroup.Name}");
+                await AppData.AddGroupAsync(newGroup);
+                await DisplayAlert("Success", $"Group '{groupName}' created!", "OK");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error creating group: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+            await DisplayAlert("Error", $"Failed to create group: {ex.Message}", "OK");
         }
     }
 
@@ -151,10 +158,10 @@ public partial class HomePage : ContentPage
         {
             string action = await DisplayActionSheet($"Options for '{group.Name}'", "Cancel", null, "Edit", "Delete");
             if (action == "Edit")
-    {
+            {
                 string newName = await DisplayPromptAsync("Edit Group", "Edit group name:", initialValue: group.Name);
                 if (!string.IsNullOrWhiteSpace(newName))
-        {
+                {
                     string newDesc = await DisplayPromptAsync("Edit Description", "Edit group description (optional):", initialValue: group.Description);
                     group.Name = newName.Trim();
                     group.Description = newDesc?.Trim() ?? "";
@@ -166,7 +173,7 @@ public partial class HomePage : ContentPage
                 bool confirm = await DisplayAlert("Delete Group", $"Are you sure you want to delete '{group.Name}'?", "Yes", "No");
                 if (confirm)
                 {
-                    Groups.Remove(group);
+                    await AppData.DeleteGroupAsync(group);
                     await DisplayAlert("Deleted", $"Group '{group.Name}' has been deleted.", "OK");
                 }
             }

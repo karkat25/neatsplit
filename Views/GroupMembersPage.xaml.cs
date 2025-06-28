@@ -10,7 +10,6 @@ namespace NeatSplit.Views;
 public partial class GroupMembersPage : ContentPage
 {
     public ObservableCollection<Member> Members { get; set; }
-    private int _nextId = 1;
     private Group _group = null!;
 
     public Group Group
@@ -21,8 +20,6 @@ public partial class GroupMembersPage : ContentPage
             _group = value;
             Title = $"Members - {_group.Name}";
             Members = new ObservableCollection<Member>(AppData.Members.Where(m => m.GroupId == _group.Id));
-            if (AppData.Members.Any())
-                _nextId = AppData.Members.Max(m => m.Id) + 1;
             BindingContext = this;
         }
     }
@@ -47,11 +44,10 @@ public partial class GroupMembersPage : ContentPage
         {
             var newMember = new Member
             {
-                Id = _nextId++,
                 Name = memberName.Trim(),
                 GroupId = _group.Id
             };
-            AppData.AddMember(newMember);
+            await AppData.AddMember(newMember);
             Members.Add(newMember);
             await DisplayAlert("Success", $"Member '{memberName}' added!", "OK");
         }
@@ -92,7 +88,7 @@ public partial class GroupMembersPage : ContentPage
                 if (confirm)
                 {
                     Members.Remove(member);
-                    AppData.RemoveMember(member);
+                    await AppData.RemoveMember(member);
                     await DisplayAlert("Deleted", $"Member '{member.Name}' has been deleted.", "OK");
                 }
             }

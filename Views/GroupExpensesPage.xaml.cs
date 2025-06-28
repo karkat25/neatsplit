@@ -93,7 +93,7 @@ public partial class GroupExpensesPage : ContentPage
                 
                 if (confirm)
                 {
-                    AppData.RemoveExpense(expense);
+                    await AppData.RemoveExpense(expense);
                     Expenses.Remove(expense);
                     await DisplayAlert("Deleted", $"Expense '{expense.Description}' has been deleted.", "OK");
                 }
