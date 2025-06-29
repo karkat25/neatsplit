@@ -37,17 +37,14 @@ public partial class HomePage : ContentPage
                     Description = description?.Trim() ?? "",
                     CreatedDate = DateTime.Now
                 };
-                
-                System.Diagnostics.Debug.WriteLine($"Creating group: {newGroup.Name}");
+
                 await AppData.AddGroupAsync(newGroup);
                 await DisplayAlert("Success", $"Group '{groupName}' created!", "OK");
             }
         }
-        catch (Exception ex)
+        catch
         {
-            System.Diagnostics.Debug.WriteLine($"Error creating group: {ex.Message}");
-            System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
-            await DisplayAlert("Error", $"Failed to create group: {ex.Message}", "OK");
+            await DisplayAlert("Error", "Failed to create group", "OK");
         }
     }
 
@@ -94,8 +91,6 @@ public partial class HomePage : ContentPage
                     { "payerMember", payerMember }
                 };
                 await Shell.Current.GoToAsync("ParticipantSelectionPage", parameters);
-                // Note: We'll need to handle the result differently since Shell navigation doesn't return values
-                // For now, we'll add the expense directly in the ParticipantSelectionPage
             }
             else
         {

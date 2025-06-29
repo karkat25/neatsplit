@@ -71,8 +71,6 @@ public partial class GroupExpensesPage : ContentPage
                     { "payerMember", payerMember }
                 };
                 await Shell.Current.GoToAsync("ParticipantSelectionPage", parameters);
-                // Note: We'll need to handle the result differently since Shell navigation doesn't return values
-                // For now, we'll add the expense directly in the ParticipantSelectionPage
             }
             else
             {

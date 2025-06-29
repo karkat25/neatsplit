@@ -9,20 +9,13 @@ public partial class App : Application
 
 	protected override async void OnStart()
 	{
-		base.OnStart();
 		try
 		{
-			// Show database path for debugging (console only)
-			var dbPath = Path.Combine(FileSystem.AppDataDirectory, "neatsplit.db3");
-			System.Diagnostics.Debug.WriteLine($"Database path: {dbPath}");
-			
-			// Initialize database after app is fully started
 			await AppData.InitializeAsync();
 		}
-		catch (Exception ex)
+		catch
 		{
-			// Log the error but don't crash the app
-			System.Diagnostics.Debug.WriteLine($"Database initialization error: {ex.Message}");
+			// Handle initialization error
 		}
 	}
 
